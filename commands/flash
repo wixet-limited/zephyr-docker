@@ -1,0 +1,6 @@
+#!/bin/bash
+
+/zephyr-sdk-0.15.1/sysroots/x86_64-pokysdk-linux/usr/bin/openocd \
+-f /zephyr-sdk-0.15.1/sysroots/x86_64-pokysdk-linux/usr/share/openocd/scripts/interface/stlink.cfg \
+-f /zephyr-sdk-0.15.1/sysroots/x86_64-pokysdk-linux/usr/share/openocd/scripts/target/nrf52.cfg \
+-c 'init' -c 'targets' -c 'program /app/dist/zephyr.signed.bin 0x0000C000' -c 'reset' -c 'exit'

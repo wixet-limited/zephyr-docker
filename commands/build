@@ -1,0 +1,40 @@
+#!/bin/bash
+
+BUILD_DIR="/app/build"
+
+cd zephyrproject
+west build --build-dir $BUILD_DIR  -b $1 /app
+
+if [ $? -eq 0 ]; then
+    echo Build Ok
+else
+    echo Build Failed
+    exit
+fi
+
+mkdir -p /app/dist
+cp $BUILD_DIR/zephyr/zephyr.elf /app/dist/zephyr.elf
+cp $BUILD_DIR/zephyr/zephyr.bin /app/dist/zephyr.bin
+cp $BUILD_DIR/zephyr/zephyr.hex /app/dist/zephyr.hex
+
+if [[ $2 == "sign" ]]; then
+    west sign --build-dir $BUILD_DIR -t imgtool -- --key bootloader/mcuboot/root-rsa-2048.pem
+    if [ $? -eq 0 ]; then
+        echo Sign Ok
+    else
+        echo Sign Failed
+        exit
+    fi
+    mv $BUILD_DIR/zephyr/zephyr.signed.hex /app/dist/zephyr.signed.hex
+    mv $BUILD_DIR/zephyr/zephyr.signed.bin /app/dist/zephyr.signed.bin
+    echo "Done, flash dist/zephyr.signed into your board!"
+else
+    echo "Done, flash dist/zephyr into your board!"
+fi
+
+if [[ $3 == "flash" ]]; then  
+    echo "Flashing..."
+    flash
+    echo "Done!"
+fi
+

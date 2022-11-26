@@ -1,0 +1,21 @@
+#!/bin/bash
+
+cd /zephyrproject/bootloader/mcuboot/boot/zephyr
+cat /zephyrproject/bootloader/mcuboot/boot/zephyr/prj.conf
+mkdir -p build && cd build
+cmake -GNinja -DBOARD=$1  ..
+ninja
+mkdir -p /app/dist
+mv zephyr/zephyr.elf /app/dist/mcuboot.elf
+mv zephyr/zephyr.bin /app/dist/mcuboot.bin
+mv zephyr/zephyr.hex /app/dist/mcuboot.hex
+
+if [[ $2 == "flash" ]]; then
+    /zephyr-sdk-0.15.1/sysroots/x86_64-pokysdk-linux/usr/bin/openocd \
+    -f /zephyr-sdk-0.15.1/sysroots/x86_64-pokysdk-linux/usr/share/openocd/scripts/interface/stlink.cfg \
+    -f /zephyr-sdk-0.15.1/sysroots/x86_64-pokysdk-linux/usr/share/openocd/scripts/target/nrf52.cfg \
+    -c 'init' -c 'targets' -c 'program /app/dist/mcuboot.elf verify' -c 'reset' -c 'exit'
+
+else
+    echo "Done, flash dist/mcuboot.elf into your board!"
+fi
